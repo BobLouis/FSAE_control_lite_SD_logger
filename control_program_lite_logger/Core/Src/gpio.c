@@ -21,6 +21,8 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
+#include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
 extern bool rtd_io;
 extern  bool precharge_io;
@@ -29,6 +31,10 @@ extern bool rtd_start;
 extern bool clear_fault_io;
 extern bool inverter_connect_R;
 extern bool inverter_connect_L;
+extern bool record;
+extern uint16_t start_record_time;
+extern uint16_t record_time;
+extern uint16_t record_cnt;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -142,8 +148,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		//inverter clear fault PIN
 		if(HAL_GPIO_ReadPin(clear_fault_SW_GPIO_Port,clear_fault_SW_Pin)==GPIO_PIN_RESET){
 			clear_fault_io=1;
+		}
+	}else if(GPIO_Pin == logger_SW_Pin){
+		if(HAL_GPIO_ReadPin(logger_SW_GPIO_Port,logger_SW_Pin)==GPIO_PIN_RESET){
+			record = 1;
+			start_record_time = HAL_GetTick();
+			++record_cnt;
 		}else{
-		}	
+			record = 0;
+		}
 	}
 }
 /* USER CODE END 2 */

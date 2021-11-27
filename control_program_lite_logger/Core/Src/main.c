@@ -125,8 +125,10 @@ uint16_t wheelSpeed[4];
 uint16_t steerDegree =0;
 
 //inverter
-uint16_t rpm_right =0;
+uint16_t rpm_right = 0;
 uint16_t rpm_left = 0;
+uint16_t DC_voltage;
+uint16_t DC_current;
 
 bool readyButton;
 uint8_t errorNumber;
@@ -148,7 +150,7 @@ bool inverter_connect_R = 0;
 uint16_t inverter_alive_counter_R = 0;
 uint16_t inverter_alive_counter_L = 0;
 bool rtd_start=0; //if precharge&&reset&&readyToDrive io are all on this parameter will be true
-//bool ready_io=0;
+bool record=0;
 bool precharge_io=0;
 bool clear_fault_io=0;
 bool direction=0;
@@ -161,8 +163,10 @@ FRESULT res;
 UINT written;
 FILINFO info;
 BYTE work[_MAX_SS];
-char time1[5];
-_Bool test = 0;
+char record_data[100];
+uint16_t start_record_time;
+uint16_t record_time;
+uint16_t record_cnt = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -416,16 +420,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			HAL_GPIO_WritePin(readyToDrive_LED_GPIO_Port,readyToDrive_LED_Pin,GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(CAN_fault_LED_GPIO_Port,CAN_fault_LED_Pin,GPIO_PIN_SET);
 		}
-		test = !test;
-		sprintf((char*)time1, "123");
-		res = f_open(&SDFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ );
-	  res = f_write(&SDFile, time1 , strlen(time1), &written);
-	  f_close(&SDFile);
-		test = !test;
-		sprintf((char*)time1, "123");
-		res = f_open(&SDFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ );
-	  res = f_write(&SDFile, time1 , strlen(time1), &written);
-	  f_close(&SDFile);
+		
+		//SD record part
+		if(record){
+			record_time = HAL_GetTick()-start_record_time;
+			sprintf((char*)record_data, "%d time %d rpmR %d rpmL %d DC_voltage %d DC_current %d",record_cnt,record_time,rpm_right,rpm_left,DC_voltage,DC_current);
+			res = f_open(&SDFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ );
+			res = f_write(&SDFile, record_data , strlen(record_data), &written);
+			f_close(&SDFile);
+		}
+
 	}
 	
 	//check apps sensor range
@@ -439,8 +443,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			HAL_GPIO_WritePin(fault_LED_GPIO_Port,fault_LED_Pin,GPIO_PIN_RESET);
 		}
 	}
-	
-	
 	++cycle;
 }
 
@@ -574,37 +576,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
 		case 0x55:
 			rpm_left  = RxData[2]+RxData[3]*256;
 			break;
+		case 0xA6: //current info
+			DC_current = RxData[6] | (RxData[7] << 8);
+			break;
+		case 0xA7: //voltage info
+			DC_voltage = RxData[0] | (RxData[1] << 8);
+			break;
 		}
-	
-	/*
-	if(Received_ID == 0xAB){
-		inverter_error_R = 0;
-		for(int i=0;i<8;++i){
-			RxData_R[i]=RxData[i];
-			if(RxData[i]){
-				inverter_error_R = 1;
-		    HAL_GPIO_WritePin(CAN_fault_LED_GPIO_Port,CAN_fault_LED_Pin,GPIO_PIN_SET);
-			}
-		}
-		if(!inverter_error_R){
-			HAL_GPIO_WritePin(CAN_fault_LED_GPIO_Port,CAN_fault_LED_Pin,GPIO_PIN_RESET);
-		}
-	}
-	
-	if(Received_ID == 0x5B){
-		inverter_error_L = 0;
-		for(int i=0;i<8;++i){
-			RxData_L[i]=RxData[i];
-			if(RxData[i]){
-				inverter_error_L = 1;
-		    HAL_GPIO_WritePin(CAN_fault_LED_GPIO_Port,CAN_fault_LED_Pin,GPIO_PIN_SET);
-			}
-		}
-		if(!inverter_error_L){
-			HAL_GPIO_WritePin(CAN_fault_LED_GPIO_Port,CAN_fault_LED_Pin,GPIO_PIN_RESET);
-		}
-	}
-	*/
 }
 
 
