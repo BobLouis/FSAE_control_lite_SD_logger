@@ -73,17 +73,14 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CAN_fault_LED_GPIO_Port, CAN_fault_LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PEPin PEPin */
-  GPIO_InitStruct.Pin = readyToDrive_SW_Pin|clear_fault_SW_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(record_LED_GPIO_Port, record_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PEPin PEPin PEPin */
+  GPIO_InitStruct.Pin = readyToDrive_SW_Pin|logger_SW_Pin|clear_fault_SW_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = logger_SW_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(logger_SW_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = precharge_SW_Pin;
@@ -112,6 +109,17 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CAN_fault_LED_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = record_LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(record_LED_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 1, 2);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
 }
 
 /* USER CODE BEGIN 2 */
@@ -130,7 +138,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		}else{
 			rtd_start=0;
 		}
-	}else if(GPIO_Pin==precharge_SW_Pin){
+	}else if(GPIO_Pin == precharge_SW_Pin){
 		//precharge pin trigger
 		if(HAL_GPIO_ReadPin(precharge_SW_GPIO_Port,precharge_SW_Pin)==GPIO_PIN_SET){
 			precharge_io=1;
@@ -150,11 +158,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			clear_fault_io=1;
 		}
 	}else if(GPIO_Pin == logger_SW_Pin){
-		if(HAL_GPIO_ReadPin(logger_SW_GPIO_Port,logger_SW_Pin)==GPIO_PIN_RESET){
+		record = 1;
+		if(HAL_GPIO_ReadPin(logger_SW_GPIO_Port,logger_SW_Pin) == GPIO_PIN_RESET){
+			HAL_GPIO_WritePin(record_LED_GPIO_Port,record_LED_Pin,GPIO_PIN_SET);
 			record = 1;
 			start_record_time = HAL_GetTick();
 			++record_cnt;
 		}else{
+			HAL_GPIO_WritePin(record_LED_GPIO_Port,record_LED_Pin,GPIO_PIN_RESET);
 			record = 0;
 		}
 	}

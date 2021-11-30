@@ -158,12 +158,12 @@ bool direction=0;
 //time
 double period=0;
 //SD
-char file_name[] = "DATA456.txt";
+char file_name[] = "test.txt";
 FRESULT res;
 UINT written;
 FILINFO info;
 BYTE work[_MAX_SS];
-char record_data[100];
+char record_data[300];
 uint16_t start_record_time;
 uint16_t record_time;
 uint16_t record_cnt = 0;
@@ -424,7 +424,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		//SD record part
 		if(record){
 			record_time = HAL_GetTick()-start_record_time;
-			sprintf((char*)record_data, "%d time %d rpmR %d rpmL %d DC_voltage %d DC_current %d",record_cnt,record_time,rpm_right,rpm_left,DC_voltage,DC_current);
+			sprintf((char*)record_data, "test %d\n",record);
+			//sprintf((char*)record_data, "%d time %d rpmR %d rpmL %d DC_voltage %d DC_current %d\n",record_cnt,record_time,rpm_right,rpm_left,DC_voltage,DC_current);
 			res = f_open(&SDFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ );
 			res = f_write(&SDFile, record_data , strlen(record_data), &written);
 			f_close(&SDFile);

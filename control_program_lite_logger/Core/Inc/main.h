@@ -63,6 +63,7 @@ void Error_Handler(void);
 #define readyToDrive_SW_EXTI_IRQn EXTI2_IRQn
 #define logger_SW_Pin GPIO_PIN_3
 #define logger_SW_GPIO_Port GPIOE
+#define logger_SW_EXTI_IRQn EXTI3_IRQn
 #define precharge_SW_Pin GPIO_PIN_4
 #define precharge_SW_GPIO_Port GPIOE
 #define precharge_SW_EXTI_IRQn EXTI4_IRQn
@@ -87,6 +88,8 @@ void Error_Handler(void);
 #define precharge_LED_GPIO_Port GPIOC
 #define CAN_fault_LED_Pin GPIO_PIN_0
 #define CAN_fault_LED_GPIO_Port GPIOB
+#define record_LED_Pin GPIO_PIN_7
+#define record_LED_GPIO_Port GPIOE
 #define Buzzer_Pin GPIO_PIN_9
 #define Buzzer_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
