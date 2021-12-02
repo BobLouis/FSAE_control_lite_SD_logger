@@ -49,7 +49,7 @@
 #define TORQUE_UB 700
 
 //pedal box parameter setting
-#define BrakeAct 1500
+#define BrakeAct 850
 #define APPSAct 300
 #define APPSLeast 200   //for the APPS plausibility check  => motor must shut down until the APPS signals less than 5% peadal travel
 #define APPSDIFF 2000
@@ -65,17 +65,17 @@
 #define DISCONNECT 4050
 //deine max and offset this parameter offset will slight bigger than the lowest and max will slight smaller than the uppest depends on  the pedal box
 //this parameter is used to determine the output torque
-#define APPSRMAX 2695
-#define APPSLMAX 2695
+#define APPSRMAX 2600
+#define APPSLMAX 3800
 #define APPSROFFSET 1600
-#define APPSLOFFSET 1600
+#define APPSLOFFSET 2900
 #define BPPSOFFSET 900
 #define BPPSMAX 2500
 #define ReadyTime 1000   //ms
 
 //dma scan
 #define APPSR adcArr[0] //min 1740   max 3740
-#define APPSL adcArr[0] //min 1450   max 3500
+#define APPSL adcArr[1] //min 1450   max 3500
 #define BPPS   adcArr[2]
 //#define APPS ((adcArr[0] - APPSROFFSET) + (adcArr[1] - APPSLOFFSET))/2
 
@@ -215,6 +215,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -389,7 +390,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
    */
 	
-	APPS = ((adcArr[0] - APPSROFFSET) + (adcArr[0] - APPSLOFFSET))/2;
+	APPS = ((APPSR - APPSROFFSET) + (APPSL - APPSLOFFSET))/2;
 	if((cycle%20) == 0){
 	//CAN transmit
 		if(clear_fault_io){
@@ -423,8 +424,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		
 		//SD record part
 		if(record){
+			if(!record_time)
+				record_cnt++;
 			record_time = HAL_GetTick()-start_record_time;
-			sprintf((char*)record_data, "test %d\n",record);
+			sprintf((char*)record_data, "cnt%2d time%4d rpmR %4d rpmL %4d DC_voltage %4d DC_current %4d\n",record_cnt,record_time/100,rpm_right,rpm_left,DC_voltage,DC_current);
 			//sprintf((char*)record_data, "%d time %d rpmR %d rpmL %d DC_voltage %d DC_current %d\n",record_cnt,record_time,rpm_right,rpm_left,DC_voltage,DC_current);
 			res = f_open(&SDFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ );
 			res = f_write(&SDFile, record_data , strlen(record_data), &written);

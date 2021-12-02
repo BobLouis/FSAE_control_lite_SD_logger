@@ -158,12 +158,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			clear_fault_io=1;
 		}
 	}else if(GPIO_Pin == logger_SW_Pin){
-		record = 1;
 		if(HAL_GPIO_ReadPin(logger_SW_GPIO_Port,logger_SW_Pin) == GPIO_PIN_RESET){
 			HAL_GPIO_WritePin(record_LED_GPIO_Port,record_LED_Pin,GPIO_PIN_SET);
 			record = 1;
 			start_record_time = HAL_GetTick();
-			++record_cnt;
+			record_time = 0;
 		}else{
 			HAL_GPIO_WritePin(record_LED_GPIO_Port,record_LED_Pin,GPIO_PIN_RESET);
 			record = 0;
