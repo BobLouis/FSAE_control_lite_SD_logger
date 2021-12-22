@@ -34,6 +34,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +47,7 @@
 //command torque define
 
 //torque upper bound
-#define TORQUE_UB 700
+#define TORQUE_UB 300
 
 //pedal box parameter setting
 #define BrakeAct 850
@@ -158,7 +159,7 @@ bool direction=0;
 //time
 double period=0;
 //SD
-char file_name[] = "test.txt";
+char file_name[20] = "test.txt";
 FRESULT res;
 UINT written;
 FILINFO info;
@@ -258,7 +259,14 @@ int main(void)
 	// SD file set/mount
 	/* Mode option 0:Do not mount (delayed mount), 1:Mount immediately */	
 	res = f_mount(&SDFatFS, (TCHAR const*)SDPath, 0);
+	//srand( time(NULL) );
+	
 	// SD file open
+	//sprintf(file_name, "test%4d.txt",rand());
+	//file_name[4]+=65;
+	//file_name[5]+=65;
+	//file_name[6]+=65;
+	//file_name[7]+=65;
 	res = f_open(&SDFile, file_name, FA_WRITE | FA_READ | FA_CREATE_ALWAYS );
 	f_close(&SDFile);
   /* USER CODE END 2 */
@@ -578,7 +586,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
 			rpm_right = RxData[2]+RxData[3]*256;
 			break;
 		case 0x55:
-			rpm_left  = RxData[2]+RxData[3]*256;
+			rpm_left = 65536 - (RxData[2]+RxData[3]*256);
 			break;
 		case 0xA6: //current info
 			DC_current = RxData[6] | (RxData[7] << 8);
