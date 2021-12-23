@@ -267,7 +267,8 @@ int main(void)
 	//file_name[5]+=65;
 	//file_name[6]+=65;
 	//file_name[7]+=65;
-	res = f_open(&SDFile, file_name, FA_WRITE | FA_READ | FA_CREATE_ALWAYS );
+	//res = f_open(&SDFile, file_name, FA_WRITE | FA_READ | FA_CREATE_ALWAYS );
+	res = f_open(&SDFile, file_name, FA_OPEN_APPEND | FA_WRITE | FA_READ  | FA_CREATE_ALWAYS);
 	f_close(&SDFile);
   /* USER CODE END 2 */
 
