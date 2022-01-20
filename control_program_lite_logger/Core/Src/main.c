@@ -47,7 +47,7 @@
 //command torque define
 
 //torque upper bound
-#define TORQUE_UB 300
+#define TORQUE_UB 700
 
 //pedal box parameter setting
 #define BrakeAct 850
